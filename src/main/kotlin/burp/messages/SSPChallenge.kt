@@ -1,6 +1,5 @@
 package burp.messages
 
-import burp.FormatUtils
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -11,8 +10,15 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
         parseFlags() // 4 bytes
         parseChallenge() // 8 bytes
         parseTargetInfo() // 8 bytes
+        parseVersion()
     }
 
+    private fun parseVersion() {
+        val majorVersion = raw[48]
+        val minorVersion = raw[49]
+
+        this.output.put("Version", FormatUtils.windowsVersion(majorVersion.toInt(),minorVersion.toInt()))
+    }
 
     private fun parseTarget() {
         val targetMessage = Arrays.copyOfRange(this.raw, 12, 20)
@@ -21,7 +27,7 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
         val maxLength = FormatUtils.getShort(targetMessage, 2)
         val offset = FormatUtils.getInt(targetMessage, 4)
 
-        this.output.put("Target", FormatUtils.NTLMString(this.raw, length, maxLength, offset))
+        this.output.put("Target", FormatUtils.ntlmString(this.raw, length, maxLength, offset))
     }
 
 
@@ -45,7 +51,7 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
 
     private fun parseTargetInfo() {
         val targetInfoMessage = Arrays.copyOfRange(this.raw, 40, 48)
-        //short type = Utils.getShort(targetInfoMessage, 0);
+        //short type = FormatUtils.getShort(targetInfoMessage, 0);
         val length = FormatUtils.getShort(targetInfoMessage, 2)
 
         val offset = FormatUtils.getInt(targetInfoMessage, 4)
@@ -54,15 +60,15 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
 
         var pos = 0
         while (pos + 4 < records.size) {
-            val record_type = FormatUtils.getShort(records, pos)
-            val record_length = FormatUtils.getShort(records, pos + 2)
+            val recordType = FormatUtils.getShort(records, pos)
+            val recordLength = FormatUtils.getShort(records, pos + 2)
 
             pos += 4 // 2 x 2 bytes consumed
 
-            //String test = Utils.NTLMString(records, record_length, record_length, pos);
-            extractTargetInfoSubBlocks(records, record_type, record_length, pos)
+            //String test = FormatUtils.ntlmString(records, record_length, record_length, pos);
+            extractTargetInfoSubBlocks(records, recordType, recordLength, pos)
 
-            pos += record_length.toInt()
+            pos += recordLength.toInt()
 
         }
     }
@@ -74,27 +80,27 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
         when (type.toInt()) {
             1 -> {
                 blockName = "MsvAvNbComputerName"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             2 -> {
                 blockName = "MsvAvNbDomainName"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             3 -> {
                 blockName = "MsvAvDnsComputerName"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             4 -> {
                 blockName = "MsvAvDnsDomainName"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             5 -> {
                 blockName = "MsvAvDnsTreeName"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             6 -> {
                 blockName = "MsvAvFlags"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             7 -> {
                 blockName = "MsvAvTimestamp"
@@ -107,11 +113,11 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
             }
             8 -> {
                 blockName = "MsvAvSingleHost"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             9 -> {
                 blockName = "MsvAvTargetName"
-                blockValue = FormatUtils.NTLMString(records, length, length, pos)
+                blockValue = FormatUtils.ntlmString(records, length, length, pos)
             }
             else -> {
                 blockName = "ERROR"
@@ -123,6 +129,6 @@ class SSPChallenge(SSPHeader: ByteArray) : SSPMessage(SSPHeader) {
     }
 
     override fun toString(): String {
-        return "SSP Challenge message"
+        return "SSP Challenge message\n"+super.toString()
     }
 }
