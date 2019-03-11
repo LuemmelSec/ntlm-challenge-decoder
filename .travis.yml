@@ -1,6 +1,13 @@
 language: java
 
+# Compatibility tests to make sure API will not be deprecated
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+  - openjdk10
+  - oraclejdk11 
+
 before_install:
  - chmod +x gradlew
  
-install: gradle build
+install: ./gradlew build
