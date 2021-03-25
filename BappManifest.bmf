@@ -2,8 +2,8 @@ Uuid: 30d095e075e64a109b8d12fc8281b5e3
 ExtensionType: 1
 Name: NTLM Challenge Decoder
 RepoName: ntlm-challenge-decoder
-ScreenVersion: 1.1
-SerialVersion: 3
+ScreenVersion: 1.1.0
+SerialVersion: 4
 MinPlatformVersion: 0
 ProOnly: False
 Author: Louis Dion-Marcil
