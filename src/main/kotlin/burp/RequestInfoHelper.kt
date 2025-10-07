@@ -24,7 +24,7 @@ internal fun getHeaderCommon(headerKey:String,headers: List<String>):String {
                 if (authorizationTokens.size == 2) {
 
                     // is the 1st token a NTLM marker?
-                    if (authorizationTokens[0] == "NTLM") {
+                    if (authorizationTokens[0] in listOf("NTLM", "Negotiate")) {
 
                         // assume 2nd token is NTLM blob
                         headerValue = authorizationTokens[1]
